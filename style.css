@@ -17,6 +17,9 @@
   --good: #0b6b2d;
   --good-bg: #ecfff3;
 
+  --bad: #b42318;
+  --bad-bg: #ffefef;
+
   --radius: 16px;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
@@ -34,6 +37,9 @@ html[data-contrast="high"] {
   --border: #000000;
   --text: #000000;
   --muted: #111827;
+
+  --good: #000000;
+  --bad: #000000;
 }
 
 /* ======================================
@@ -50,17 +56,27 @@ html[data-dyslexia="on"] {
    GLOBAL
    ====================================== */
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
   font-family: var(--font);
   background: var(--bg);
   color: var(--text);
+}
+
+/* ======================================
+   NOSCRIPT
+   ====================================== */
+
+.noscript {
+  max-width: 900px;
+  margin: 16px auto;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
 }
 
 /* ======================================
@@ -92,9 +108,7 @@ h1 {
   margin-bottom: 10px;
 }
 
-.toolbar {
-  margin-top: 10px;
-}
+.toolbar { margin-top: 10px; }
 
 /* ======================================
    GRID LAYOUT
@@ -107,9 +121,7 @@ h1 {
 }
 
 @media (max-width: 900px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+  .grid { grid-template-columns: 1fr; }
 }
 
 /* ======================================
@@ -128,24 +140,11 @@ h1 {
    TEXT
    ====================================== */
 
-.h2 {
-  margin: 0 0 10px;
-  font-weight: 800;
-}
+.h2 { margin: 0 0 10px; font-weight: 800; }
+.h3 { margin: 10px 0 8px; font-weight: 800; }
 
-.h3 {
-  margin: 10px 0 8px;
-  font-weight: 800;
-}
-
-.small {
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.note {
-  color: var(--muted);
-}
+.small { font-size: 14px; color: var(--muted); }
+.note  { color: var(--muted); }
 
 /* ======================================
    ROWS & FIELDS
@@ -158,9 +157,7 @@ h1 {
   align-items: center;
 }
 
-.row--spread {
-  justify-content: space-between;
-}
+.row--spread { justify-content: space-between; }
 
 .field {
   display: flex;
@@ -197,9 +194,7 @@ h1 {
   color: var(--text);
 }
 
-.btn--soft {
-  background: var(--surface-soft);
-}
+.btn--soft { background: var(--surface-soft); }
 
 .btn--primary {
   background: rgba(104, 200, 240, 0.35);
@@ -211,8 +206,11 @@ h1 {
   border-color: rgba(11, 107, 45, 0.25);
 }
 
-.btn:active {
-  transform: translateY(1px);
+.btn:active { transform: translateY(1px); }
+
+.btn:focus, .select:focus, .slider:focus {
+  outline: 3px solid rgba(104,200,240,0.7);
+  outline-offset: 2px;
 }
 
 /* ======================================
@@ -226,16 +224,9 @@ h1 {
   background: var(--surface);
 }
 
-.pill__big {
-  font-weight: 900;
-  font-size: 18px;
-}
+.pill__big { font-weight: 900; font-size: 18px; }
 
-.stat {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.stat { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .stat__item {
   border: 1px solid var(--border);
@@ -244,14 +235,8 @@ h1 {
   background: var(--surface);
 }
 
-.stat__k {
-  font-weight: 800;
-  margin-right: 4px;
-}
-
-.stat__v {
-  font-weight: 900;
-}
+.stat__k { font-weight: 800; margin-right: 4px; }
+.stat__v { font-weight: 900; }
 
 /* ======================================
    DIVIDERS
@@ -267,14 +252,8 @@ h1 {
    SLIDER
    ====================================== */
 
-.sliderWrap {
-  margin-top: 10px;
-  width: 100%;
-}
-
-.slider {
-  width: 100%;
-}
+.sliderWrap { margin-top: 10px; width: 100%; }
+.slider { width: 100%; }
 
 .sliderTicks {
   display: flex;
@@ -295,10 +274,7 @@ h1 {
   padding: 10px;
 }
 
-.callout__title {
-  font-weight: 900;
-  margin: 0 0 6px;
-}
+.callout__title { font-weight: 900; margin: 0 0 6px; }
 
 .callout__list {
   margin: 0;
@@ -327,11 +303,7 @@ h1 {
    SHELL DISPLAY
    ====================================== */
 
-.shells {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
+.shells { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .shell {
   border: 1px solid var(--border);
@@ -348,10 +320,7 @@ h1 {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-.spdf {
-  font-weight: 800;
-  font-size: 18px;
-}
+.spdf { font-weight: 800; font-size: 18px; }
 
 /* ======================================
    LEGEND
@@ -375,34 +344,111 @@ h1 {
   font-weight: 700;
 }
 
-.legend__swatch {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-}
-
+.legend__swatch { width: 12px; height: 12px; border-radius: 3px; }
 .legend__s .legend__swatch { background: #0b5fa5; }
 .legend__p .legend__swatch { background: #2f9bd8; }
 .legend__d .legend__swatch { background: #68c8f0; }
 .legend__f .legend__swatch { background: #7c3aed; }
 
 /* ======================================
-   ORBITALS CONTAINER
+   ORBITALS
    ====================================== */
 
-.orbs {
-  display: grid;
-  gap: 10px;
+.orbs { display: grid; gap: 10px; }
+
+.orb-box {
+  width: 44px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  background: var(--bg);
 }
+
+/* ======================================
+   BADGE
+   ====================================== */
+
+.orbital-badge { margin: 6px 0 8px; }
+
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.badge--tm {
+  border-color: rgba(0,96,160,0.35);
+  background: rgba(104,200,240,0.25);
+}
+
+/* ======================================
+   ENERGY BANDS + PROMOTION CUE
+   ====================================== */
+
+.energy-bands {
+  display: none;
+  margin: 6px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.energy-band {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.energy-band--low { background: rgba(104, 200, 240, 0.18); }
+.energy-band--high {
+  background: rgba(0, 96, 160, 0.10);
+  border-top: 1px dashed rgba(0, 0, 0, 0.15);
+}
+
+.energy-pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: var(--bg);
+  font-weight: 900;
+}
+
+.jump-wrap {
+  position: relative;
+  height: 22px;
+  margin: 6px 0 8px;
+}
+
+.jump-dot {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ec-blue);
+  opacity: 0;
+}
+
+html[data-contrast="high"] .jump-dot { background: #000; }
 
 /* ======================================
    FOOTER
    ====================================== */
 
-.footer {
-  text-align: center;
-  margin-top: 12px;
-}
+.footer { text-align: center; margin-top: 12px; }
 
 /* ======================================
    SCREEN READER ONLY
@@ -421,28 +467,16 @@ h1 {
    GOOGLE SITES EMBED OPTIMISATION
    ====================================== */
 
-/* Prevent horizontal scrollbars in embeds */
-body {
-  overflow-x: hidden;
-}
+body { overflow-x: hidden; }
 
-/* Make the embed feel native: slightly tighter padding + full width */
 .wrap {
   max-width: 100%;
   margin: 0 auto;
   padding: 16px;
 }
 
-/* Improve scaling inside iframe */
-main {
-  width: 100%;
-}
+main { width: 100%; }
 
-/* A little tighter on smaller screens */
 @media (max-width: 1200px) {
-  .wrap {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
+  .wrap { padding-left: 12px; padding-right: 12px; }
 }
-
