@@ -1,89 +1,162 @@
 <!DOCTYPE html>
 <html lang="en-NZ" data-contrast="normal" data-dyslexia="on">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Ion Builder (H–Kr) — Electron Config Mini-Game</title>
 
-<title>Ion Builder (H–Kr)</title>
+  <!-- Open Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
-<!-- Open Sans -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="style.css">
+  <!-- GitHub Pages friendly: explicit relative paths -->
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
+  <noscript>
+    <div style="max-width:900px;margin:16px auto;padding:12px;border:1px solid #d0d7de;border-radius:12px;font-family:Arial,sans-serif;">
+      This activity needs JavaScript to run. Please enable JavaScript or try a different browser/device.
+    </div>
+  </noscript>
 
-<div class="wrap">
+  <main class="wrap" aria-label="Ion Builder interactive learning tool">
+    <header class="header">
+      <h1>Ion Builder (H → Kr)</h1>
+      <p class="subhead">
+        Change electrons to build ions and instantly see shells + <span class="mono">spdf</span> notation update.
+      </p>
 
-<header class="header">
-  <h1>Ion Builder (H → Kr)</h1>
-  <p class="subhead">
-    Change electrons to see shells and spdf notation update instantly.
-  </p>
+      <section class="toolbar" aria-label="Display controls">
+        <button id="toggleContrast" class="btn btn--soft" type="button" aria-pressed="false">
+          High contrast
+        </button>
+      </section>
+    </header>
 
-  <button id="toggleContrast" class="btn">
-    High contrast
-  </button>
-</header>
+    <section class="grid" aria-label="Main content">
+      <!-- LEFT: controls + outputs -->
+      <section class="card" aria-label="Build an ion">
+        <h2 class="h2">Build an ion</h2>
 
-<div class="grid">
+        <div class="row">
+          <label class="field">
+            <span class="field__label">Element (first 36)</span>
+            <select id="elementSelect" class="select" aria-label="Choose an element"></select>
+          </label>
 
-<!-- LEFT PANEL -->
-<div class="card">
+          <div class="stat" role="group" aria-label="Current element details">
+            <div class="stat__item"><span class="stat__k">Z</span> <span id="zOut" class="stat__v">12</span></div>
+            <div class="stat__item"><span class="stat__k">Symbol</span> <span id="symOut" class="stat__v">Mg</span></div>
+            <div class="stat__item"><span class="stat__k">Charge</span> <span id="chargeOut" class="stat__v">0</span></div>
+          </div>
+        </div>
 
-<h2>Build an ion</h2>
+        <div class="divider" role="separator" aria-hidden="true"></div>
 
-<div class="row">
-  <label>
-    Element
-    <select id="elementSelect"></select>
-  </label>
+        <h3 class="h3">Adjust electrons</h3>
 
-  <div class="pill">
-    Z = <span id="zOut">12</span>
-  </div>
+        <div class="row row--spread" role="group" aria-label="Electron controls">
+          <button id="minus" class="btn" type="button">− 1 e⁻</button>
 
-  <div class="pill">
-    Charge = <span id="chargeOut">0</span>
-  </div>
-</div>
+          <div class="pill" aria-live="polite">
+            Electrons: <span id="eCount" class="pill__big">12</span>
+          </div>
 
-<h3>Adjust electrons</h3>
+          <button id="plus" class="btn" type="button">+ 1 e⁻</button>
+        </div>
 
-<div class="row">
-  <button id="minus" class="btn">− 1 e⁻</button>
-  <div class="pill big">
-    <span id="eCount">12</span>
-  </div>
-  <button id="plus" class="btn">+ 1 e⁻</button>
-</div>
+        <label class="sliderWrap" aria-label="Electron slider">
+          <span class="sr-only">Electron slider</span>
+          <input id="slider" class="slider" type="range" min="1" max="36" value="12" />
+          <div class="sliderTicks" aria-hidden="true">
+            <span>1</span><span>36</span>
+          </div>
+        </label>
 
-<input id="slider" type="range" min="1" max="36" value="12">
+        <div class="callout" role="note">
+          <p class="callout__title">UDL supports built in</p>
+          <ul class="callout__list">
+            <li>Extra spacing is enabled for readability.</li>
+            <li>Colour is paired with labels (s / p / d / f), so it’s not colour-only.</li>
+            <li>Clear focus rings support keyboard navigation.</li>
+          </ul>
+        </div>
 
-<h3>Shell arrangement</h3>
-<div id="shells"></div>
+        <div class="outputs" aria-label="Outputs">
+          <div class="outputCard">
+            <h3 class="h3">Shell arrangement</h3>
+            <div id="shells" class="shells" aria-label="Electron shells"></div>
+          </div>
 
-<h3>spdf notation</h3>
-<p id="spdf" class="mono"></p>
-<p id="stability"></p>
+          <div class="outputCard">
+            <h3 class="h3">spdf notation</h3>
+            <p id="spdf" class="mono spdf" aria-live="polite"></p>
+            <p id="stability" class="note" aria-live="polite"></p>
+          </div>
+        </div>
 
-</div>
+        <div class="divider" role="separator" aria-hidden="true"></div>
 
-<!-- RIGHT PANEL -->
-<div class="card">
+        <h3 class="h3">Challenge mode</h3>
+        <div class="row">
+          <label class="field">
+            <span class="field__label">Target ion charge</span>
+            <select id="targetIon" class="select" aria-label="Choose a target ion charge"></select>
+          </label>
 
-<h2>Orbital view</h2>
-<div id="orbitalView"></div>
+          <button id="setTarget" class="btn btn--primary" type="button">
+            Set electrons to target
+          </button>
 
-</div>
+          <button id="randomChallenge" class="btn btn--soft" type="button">
+            Random challenge
+          </button>
+        </div>
 
-</div>
-</div>
+        <div class="row row--spread" style="margin-top:10px;">
+          <button id="check" class="btn btn--good" type="button">Check my ion</button>
+          <div class="pill">
+            Result: <span id="resultOut" class="pill__big">—</span>
+          </div>
+        </div>
 
-<script src="script.js"></script>
+        <p class="small">
+          Reminder: <b>protons stay the same</b>. Only the <b>number of electrons</b> changes when ions form.
+        </p>
+
+        <div class="sr-only" aria-live="assertive" id="srStatus"></div>
+      </section>
+
+      <!-- RIGHT: visual orbitals + legend -->
+      <section class="card" aria-label="Visual explanation">
+        <h2 class="h2">Visual explanation</h2>
+        <p class="note">
+          Orbitals fill in this order (first 36 e⁻): <span class="mono">1s 2s 2p 3s 3p 4s 3d 4p</span>.
+          The boxes show a simple Hund’s rule view (single ↑ before pairing ↓).
+        </p>
+
+        <div class="legend" aria-label="Subshell colour legend">
+          <div class="legend__item legend__s"><span class="legend__swatch" aria-hidden="true"></span><span class="legend__txt">s-block</span></div>
+          <div class="legend__item legend__p"><span class="legend__swatch" aria-hidden="true"></span><span class="legend__txt">p-block</span></div>
+          <div class="legend__item legend__d"><span class="legend__swatch" aria-hidden="true"></span><span class="legend__txt">d-block</span></div>
+          <div class="legend__item legend__f"><span class="legend__swatch" aria-hidden="true"></span><span class="legend__txt">f-block (not used for 1–36)</span></div>
+        </div>
+
+        <div id="orbitalView" class="orbs" aria-label="Orbital box diagrams"></div>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <p class="small">
+        Keyboard-friendly: Tab to navigate, Enter/Space to activate buttons, arrow keys to adjust the slider.
+      </p>
+    </footer>
+  </main>
+
+  <!-- GitHub Pages friendly: explicit relative path -->
+  <script src="./script.js"></script>
 </body>
 </html>
-
