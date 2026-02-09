@@ -1,6 +1,8 @@
 /* Ion Builder (H–Kr) — script.js
-   - Cr/Cu neutral exceptions fixed
-   - For cations of transition metals, remove 4s before 3d
+   Fixes:
+   - Cr (Z=24): [Ar] 3d5 4s1
+   - Cu (Z=29): [Ar] 3d10 4s1
+   - For cations, remove electrons from 4p → 4s → 3d → ...
    - Transition metal badge + energy bands + targeted promotion animation
 */
 
@@ -60,7 +62,7 @@ const commonIons = {
   Kr: [0]
 };
 
-// Filling order for first 36 electrons
+// Filling order up to 36 e-
 const fillingOrder = [
   { label: "1s", n: 1, sub: "s", cap: 2 },
   { label: "2s", n: 2, sub: "s", cap: 2 },
@@ -75,17 +77,14 @@ const fillingOrder = [
 // ===== DOM =====
 const elSelect = document.getElementById("elementSelect");
 const targetIon = document.getElementById("targetIon");
-
 const zOut = document.getElementById("zOut");
 const symOut = document.getElementById("symOut");
 const chargeOut = document.getElementById("chargeOut");
 const eCountOut = document.getElementById("eCount");
-
 const spdfOut = document.getElementById("spdf");
 const stabilityOut = document.getElementById("stability");
 const shellsOut = document.getElementById("shells");
 const orbitalViewOut = document.getElementById("orbitalView");
-
 const slider = document.getElementById("slider");
 const resultOut = document.getElementById("resultOut");
 const srStatus = document.getElementById("srStatus");
@@ -98,48 +97,32 @@ const btnCheck = document.getElementById("check");
 const btnContrast = document.getElementById("toggleContrast");
 
 const orbitalBadge = document.getElementById("orbitalBadge");
+const energyBands = document.getElementById("energyBands");
 const jumpWrap = document.getElementById("jumpWrap");
 const jumpDot = document.getElementById("jumpDot");
-const energyBands = document.getElementById("energyBands");
 
 // ===== State =====
 let Z = 12;
 let electrons = 12;
 
-// ===== Helpers =====
+// ===== Utilities =====
 function getElement() {
   return elements.find(e => e.Z === Z) || elements[0];
 }
-
-function clamp(v, lo, hi) {
-  return Math.max(lo, Math.min(hi, v));
-}
-
-function fmtCharge(ch) {
-  if (ch === 0) return "0";
-  return ch > 0 ? `+${ch}` : `${ch}`;
-}
-
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function fmtCharge(ch) { return ch === 0 ? "0" : (ch > 0 ? `+${ch}` : `${ch}`); }
 function toSup(num) {
   const map = { "0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹" };
   return String(num).split("").map(d => map[d] || d).join("");
 }
-
-function announce(msg) {
-  if (srStatus) srStatus.textContent = msg;
-}
-
+function announce(msg) { if (srStatus) srStatus.textContent = msg; }
 function setResult(text, isCorrect = null) {
   resultOut.textContent = text;
-  if (isCorrect === null) {
-    resultOut.style.color = "";
-  } else {
-    resultOut.style.color = isCorrect ? "var(--good)" : "var(--bad)";
-  }
+  resultOut.style.color = (isCorrect === null) ? "" : (isCorrect ? "var(--good)" : "var(--bad)");
   resultOut.style.fontWeight = "900";
 }
 
-// ===== Dropdown init =====
+// ===== Init =====
 function initElements() {
   elSelect.innerHTML = "";
   for (const e of elements) {
@@ -150,11 +133,9 @@ function initElements() {
     elSelect.appendChild(opt);
   }
 }
-
 function updateIonTargets() {
   const sym = getElement().sym;
   const ions = commonIons[sym] || [0];
-
   targetIon.innerHTML = "";
   for (const ch of ions) {
     const opt = document.createElement("option");
@@ -164,7 +145,7 @@ function updateIonTargets() {
   }
 }
 
-// ===== Electron configuration (correct Cr/Cu + correct removal order) =====
+// ===== Config builders =====
 function buildAufbauConfig(e) {
   let remaining = e;
   const config = [];
@@ -176,13 +157,11 @@ function buildAufbauConfig(e) {
   }
   return config;
 }
-
 function configToMap(config) {
   const map = {};
   for (const part of config) map[part.label] = part.e;
   return map;
 }
-
 function mapToConfig(map) {
   const out = [];
   for (const sub of fillingOrder) {
@@ -192,14 +171,41 @@ function mapToConfig(map) {
   return out;
 }
 
+/* ✅ CRITICAL FIX:
+   Ensure Cr and Cu are forced AFTER Aufbau neutral build
+   and ALSO "re-balanced" so total electrons stays exactly Z.
+*/
 function applyCrCuExceptionsForNeutral(Z, map) {
-  if (Z === 24) { map["4s"] = 1; map["3d"] = 5; }   // Cr
-  if (Z === 29) { map["4s"] = 1; map["3d"] = 10; }  // Cu
+  if (Z === 24) {
+    // Start from [Ar] then 3d5 4s1
+    map["4s"] = 1;
+    map["3d"] = 5;
+  }
+  if (Z === 29) {
+    map["4s"] = 1;
+    map["3d"] = 10;
+  }
+
+  // Safety: keep total electrons correct for neutral (prevents odd carry-over)
+  const total = Object.values(map).reduce((a, b) => a + (b || 0), 0);
+  if (total !== Z) {
+    // Adjust by trimming from highest-energy (4p, 4s, 3d) if ever needed
+    let diff = total - Z;
+    const order = ["4p", "4s", "3d", "3p", "3s", "2p", "2s", "1s"];
+    for (const orb of order) {
+      if (diff <= 0) break;
+      const have = map[orb] || 0;
+      if (have <= 0) continue;
+      const take = Math.min(have, diff);
+      map[orb] = have - take;
+      diff -= take;
+    }
+  }
+
   return map;
 }
 
 function removeElectrons(map, countToRemove) {
-  // ionisation order: remove from outer/ higher-energy first (4s before 3d)
   const order = ["4p", "4s", "3d", "3p", "3s", "2p", "2s", "1s"];
   let remaining = countToRemove;
 
@@ -207,7 +213,6 @@ function removeElectrons(map, countToRemove) {
     if (remaining <= 0) break;
     const have = map[orb] || 0;
     if (have <= 0) continue;
-
     const take = Math.min(have, remaining);
     map[orb] = have - take;
     remaining -= take;
@@ -216,75 +221,56 @@ function removeElectrons(map, countToRemove) {
 }
 
 function buildConfigForElement(Z, e) {
-  // Start from neutral atom of Z
-  let neutral = buildAufbauConfig(Z);
-  let neutralMap = configToMap(neutral);
+  // Build NEUTRAL for that element first (so exceptions apply properly)
+  const neutralBase = buildAufbauConfig(Z);
+  let neutralMap = configToMap(neutralBase);
   neutralMap = applyCrCuExceptionsForNeutral(Z, neutralMap);
 
-  // Neutral
   if (e === Z) return mapToConfig(neutralMap);
 
-  // Cations: remove electrons from neutral
   if (e < Z) {
     const ionMap = { ...neutralMap };
     removeElectrons(ionMap, Z - e);
     return mapToConfig(ionMap);
   }
 
-  // Anions: basic Aufbau to e (fine for this tool level)
+  // Anions: fill by Aufbau to e (fine at this level)
   const anion = buildAufbauConfig(e);
-  let anionMap = configToMap(anion);
-
-  // Keep the exception if slider lands exactly on 24 or 29
-  if (e === 24) anionMap = applyCrCuExceptionsForNeutral(24, anionMap);
-  if (e === 29) anionMap = applyCrCuExceptionsForNeutral(29, anionMap);
-
-  return mapToConfig(anionMap);
+  return anion;
 }
 
-// ===== Shells =====
+// ===== Shells + strings =====
 function shellsFromConfig(config) {
   const shells = {};
   for (const part of config) shells[part.n] = (shells[part.n] || 0) + part.e;
-
-  const arr = [];
-  for (let n = 1; n <= 4; n++) {
-    arr.push({ n, e: shells[n] || 0 });
-  }
-  return arr;
+  return [1,2,3,4].map(n => ({ n, e: shells[n] || 0 }));
 }
-
 function outerShellInfo(shellArr) {
   const highest = [...shellArr].reverse().find(s => s.e > 0);
   if (!highest) return { n: 1, e: 0, full: false };
   const full = (highest.n === 1 && highest.e === 2) || (highest.n >= 2 && highest.e === 8);
   return { n: highest.n, e: highest.e, full };
 }
-
 function spdfString(config) {
   return config.map(s => `${s.label}${toSup(s.e)}`).join(" ");
 }
 
-// Hund simplified: fill ↑ across, then pair ↓
+// Hund simplified
 function orbitalBoxes(subLabel, eCount) {
   const type = subLabel.slice(-1);
   const boxes = (type === "s" ? 1 : type === "p" ? 3 : type === "d" ? 5 : 7);
-
   let remaining = eCount;
   const states = Array.from({ length: boxes }, () => []);
-
   for (let i = 0; i < boxes && remaining > 0; i++) { states[i].push("↑"); remaining--; }
   for (let i = 0; i < boxes && remaining > 0; i++) { states[i].push("↓"); remaining--; }
-
   return states.map(st => st.join("") || " ");
 }
 
-// ===== Render =====
+// ===== Render helpers =====
 function renderShells(shellArr) {
   shellsOut.innerHTML = "";
   for (const s of shellArr) {
     if (s.n === 4 && s.e === 0) continue;
-
     const div = document.createElement("div");
     div.className = "shell";
     div.innerHTML = `<b>Shell n=${s.n}</b><br><span class="mono">${s.e} e⁻</span>`;
@@ -312,34 +298,32 @@ function renderOrbitals(config) {
     wrap.appendChild(header);
 
     const boxes = orbitalBoxes(sub.label, sub.e);
-    const boxesRow = document.createElement("div");
-    boxesRow.style.display = "flex";
-    boxesRow.style.flexWrap = "wrap";
-    boxesRow.style.gap = "6px";
-    boxesRow.style.marginTop = "8px";
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.flexWrap = "wrap";
+    row.style.gap = "6px";
+    row.style.marginTop = "8px";
 
     for (const b of boxes) {
       const box = document.createElement("div");
       box.classList.add("orb-box");
-      box.dataset.orb = sub.label; // e.g. "3d"
-      box.dataset.idx = String(boxesRow.childElementCount);
+      box.dataset.orb = sub.label;
 
       const trimmed = (b || "").trim();
       if (trimmed === "↑") box.dataset.fill = "single";
       else if (trimmed === "↑↓") box.dataset.fill = "pair";
       else box.dataset.fill = "empty";
 
-      // Keep the visible label simple
-      box.textContent = `${b}`;
-      boxesRow.appendChild(box);
+      box.textContent = b;
+      row.appendChild(box);
     }
 
-    wrap.appendChild(boxesRow);
+    wrap.appendChild(row);
     orbitalViewOut.appendChild(wrap);
   }
 }
 
-// ===== Promotion animation (between specific 3d boxes, rising slightly) =====
+// ===== Promotion animation =====
 function playPromotionAnimationBetween(fromEl, toEl) {
   if (!jumpDot || !jumpWrap || !fromEl || !toEl) return;
 
@@ -366,6 +350,7 @@ function playPromotionAnimationBetween(fromEl, toEl) {
   );
 }
 
+// ===== Main render =====
 function setElectrons(val) {
   electrons = clamp(val, 1, 36);
   slider.value = String(electrons);
@@ -383,26 +368,22 @@ function render() {
   const charge = Z - electrons;
   chargeOut.textContent = fmtCharge(charge);
 
+  // ✅ ALWAYS use element-aware builder (this is what fixes Cr reliably)
   const config = buildConfigForElement(Z, electrons);
+
   spdfOut.textContent = spdfString(config);
 
   const shellArr = shellsFromConfig(config);
   renderShells(shellArr);
 
-  // Transition metal range here: Sc–Zn (21–30)
   const isTransitionMetal = (Z >= 21 && Z <= 30);
   const dElectrons = (config.find(c => c.label === "3d") || {}).e || 0;
   const colourPossible = isTransitionMetal && dElectrons > 0 && dElectrons < 10;
 
-  // Smarter “stability/meaning” message
   if (isTransitionMetal) {
-    if (dElectrons === 0 || dElectrons === 10) {
-      stabilityOut.textContent =
-        "This ion has an empty or filled d subshell, which is often more stable and often colourless.";
-    } else {
-      stabilityOut.textContent =
-        "Partially filled d orbitals allow electron transitions (absorbing visible light), so colour is possible.";
-    }
+    stabilityOut.textContent = colourPossible
+      ? "Partially filled d orbitals allow electron transitions (absorbing visible light), so colour is possible."
+      : "This ion has an empty or filled d subshell, which is often more stable and often colourless.";
   } else {
     const outer = outerShellInfo(shellArr);
     stabilityOut.textContent = outer.full
@@ -412,7 +393,6 @@ function render() {
 
   renderOrbitals(config);
 
-  // Badge
   if (orbitalBadge) {
     if (colourPossible) {
       orbitalBadge.innerHTML =
@@ -425,25 +405,17 @@ function render() {
     }
   }
 
-  // Energy bands + targeted promotion animation
   if (energyBands) energyBands.style.display = colourPossible ? "block" : "none";
   if (jumpWrap) jumpWrap.style.display = colourPossible ? "block" : "none";
 
   if (colourPossible) {
     const singles = Array.from(document.querySelectorAll('.orb-box[data-orb="3d"][data-fill="single"]'));
     const empties = Array.from(document.querySelectorAll('.orb-box[data-orb="3d"][data-fill="empty"]'));
-    const pairs = Array.from(document.querySelectorAll('.orb-box[data-orb="3d"][data-fill="pair"]'));
+    let fromEl = null, toEl = null;
 
-    let fromEl = null;
-    let toEl = null;
-
-    // Best: unpaired → empty (looks like promotion into an available orbital)
     if (singles.length && empties.length) {
       fromEl = singles[0];
       toEl = empties[0];
-    } else if (pairs.length && singles.length) {
-      fromEl = pairs[0];
-      toEl = singles[0];
     } else if (singles.length >= 2) {
       fromEl = singles[0];
       toEl = singles[1];
@@ -456,7 +428,7 @@ function render() {
 // ===== Events =====
 elSelect.addEventListener("change", () => {
   Z = parseInt(elSelect.value, 10);
-  setElectrons(Z); // reset to neutral for that element
+  setElectrons(Z); // reset to neutral atom
   updateIonTargets();
   setResult("—", null);
   announce(`Element changed to ${getElement().name}.`);
@@ -465,9 +437,7 @@ elSelect.addEventListener("change", () => {
 btnMinus.addEventListener("click", () => setElectrons(electrons - 1));
 btnPlus.addEventListener("click", () => setElectrons(electrons + 1));
 
-slider.addEventListener("input", (e) => {
-  setElectrons(parseInt(e.target.value, 10));
-});
+slider.addEventListener("input", (e) => setElectrons(parseInt(e.target.value, 10)));
 
 btnSetTarget.addEventListener("click", () => {
   const desiredCharge = parseInt(targetIon.value, 10);
@@ -479,10 +449,8 @@ btnSetTarget.addEventListener("click", () => {
 btnRandom.addEventListener("click", () => {
   const sym = getElement().sym;
   const ions = commonIons[sym] || [];
-  if (!ions.length) {
-    alert("No preset common ions for this element. Try a different element.");
-    return;
-  }
+  if (!ions.length) { alert("No preset common ions for this element. Try a different element."); return; }
+
   const desired = ions[Math.floor(Math.random() * ions.length)];
   targetIon.value = String(desired);
 
@@ -497,7 +465,6 @@ btnRandom.addEventListener("click", () => {
 btnCheck.addEventListener("click", () => {
   const desiredCharge = parseInt(targetIon.value, 10);
   const currentCharge = Z - electrons;
-
   if (currentCharge === desiredCharge) {
     setResult("Correct ✅", true);
     announce("Correct ion built.");
