@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en-NZ" data-contrast="normal" data-dyslexia="on">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ion Builder (H–Kr) — Electron Configuration Mini-Game</title>
 
-  <!-- Open Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -15,171 +13,165 @@
 </head>
 
 <body>
-  <noscript>
-    <div class="noscript">
-      This activity needs JavaScript enabled to run correctly.
-    </div>
-  </noscript>
+<noscript>
+  <div class="noscript">
+    This activity needs JavaScript enabled to run correctly.
+  </div>
+</noscript>
 
-  <main class="wrap" aria-label="Ion Builder interactive learning tool">
+<main class="wrap" aria-label="Ion Builder interactive learning tool">
 
-    <header class="header">
-      <h1>Ion Builder (H → Kr)</h1>
+  <header class="header">
+    <h1>Ion Builder (H → Kr)</h1>
+    <p class="subhead">
+      Change electrons to build ions and instantly see shells + <span class="mono">spdf</span> notation update.
+    </p>
 
-      <p class="subhead">
-        Change electrons to build ions and instantly see shells +
-        <span class="mono">spdf</span> notation update.
-      </p>
+    <section class="toolbar" aria-label="Display controls">
+      <button id="toggleContrast" class="btn btn--soft" type="button" aria-pressed="false">
+        High contrast
+      </button>
+    </section>
+  </header>
 
-      <section class="toolbar" aria-label="Display controls">
-        <button id="toggleContrast" class="btn btn--soft" type="button" aria-pressed="false">
-          High contrast
-        </button>
-      </section>
-    </header>
+  <section class="grid" aria-label="Main content">
 
-    <section class="grid" aria-label="Main content">
+    <!-- LEFT -->
+    <section class="card" aria-label="Build an ion">
+      <h2 class="h2">Build an ion</h2>
 
-      <!-- LEFT PANEL -->
-      <section class="card" aria-label="Build an ion">
-        <h2 class="h2">Build an ion</h2>
-
-        <div class="row">
-          <label class="field">
-            <span class="field__label">Element (first 36)</span>
-            <select id="elementSelect" class="select" aria-label="Choose an element"></select>
-          </label>
-
-          <div class="stat" role="group" aria-label="Current element details">
-            <div class="stat__item"><span class="stat__k">Z</span> <span id="zOut" class="stat__v">12</span></div>
-            <div class="stat__item"><span class="stat__k">Symbol</span> <span id="symOut" class="stat__v">Mg</span></div>
-            <div class="stat__item"><span class="stat__k">Charge</span> <span id="chargeOut" class="stat__v">0</span></div>
-          </div>
-        </div>
-
-        <div class="divider" role="separator"></div>
-
-        <h3 class="h3">Adjust electrons</h3>
-
-        <div class="row row--spread">
-          <button id="minus" class="btn" type="button">− 1 e⁻</button>
-
-          <div class="pill" aria-live="polite">
-            Electrons: <span id="eCount" class="pill__big">12</span>
-          </div>
-
-          <button id="plus" class="btn" type="button">+ 1 e⁻</button>
-        </div>
-
-        <label class="sliderWrap" aria-label="Electron slider">
-          <input id="slider" class="slider" type="range" min="1" max="36" value="12">
-          <div class="sliderTicks" aria-hidden="true">
-            <span>1</span><span>36</span>
-          </div>
+      <div class="row">
+        <label class="field">
+          <span class="field__label">Element (first 36)</span>
+          <select id="elementSelect" class="select" aria-label="Choose an element"></select>
         </label>
 
-        <div class="callout" role="note">
-          <p class="callout__title">UDL supports built in</p>
-          <ul class="callout__list">
-            <li>Extra spacing supports readability.</li>
-            <li>Colour is paired with labels (s / p / d / f).</li>
-            <li>Clear focus rings support keyboard navigation.</li>
-          </ul>
+        <div class="stat" role="group" aria-label="Current element details">
+          <div class="stat__item"><span class="stat__k">Z</span> <span id="zOut" class="stat__v">12</span></div>
+          <div class="stat__item"><span class="stat__k">Symbol</span> <span id="symOut" class="stat__v">Mg</span></div>
+          <div class="stat__item"><span class="stat__k">Charge</span> <span id="chargeOut" class="stat__v">0</span></div>
+        </div>
+      </div>
+
+      <div class="divider" role="separator"></div>
+
+      <h3 class="h3">Adjust electrons</h3>
+
+      <div class="row row--spread" role="group" aria-label="Electron controls">
+        <button id="minus" class="btn" type="button">− 1 e⁻</button>
+
+        <div class="pill" aria-live="polite">
+          Electrons: <span id="eCount" class="pill__big">12</span>
         </div>
 
-        <div class="outputs" aria-label="Outputs">
-          <div class="outputCard">
-            <h3 class="h3">Shell arrangement</h3>
-            <div id="shells" class="shells" aria-label="Electron shells"></div>
-          </div>
+        <button id="plus" class="btn" type="button">+ 1 e⁻</button>
+      </div>
 
-          <div class="outputCard">
-            <h3 class="h3">spdf notation</h3>
-            <p id="spdf" class="mono spdf" aria-live="polite"></p>
-            <p id="stability" class="note" aria-live="polite"></p>
-            <p class="small">
-              Tip: For transition metal ions, electrons are removed from <span class="mono">4s</span> before <span class="mono">3d</span>.
-            </p>
-          </div>
+      <label class="sliderWrap" aria-label="Electron slider">
+        <input id="slider" class="slider" type="range" min="1" max="36" value="12">
+        <div class="sliderTicks" aria-hidden="true"><span>1</span><span>36</span></div>
+      </label>
+
+      <div class="callout" role="note">
+        <p class="callout__title">UDL supports built in</p>
+        <ul class="callout__list">
+          <li>Extra spacing supports readability.</li>
+          <li>Colour is paired with labels (s / p / d / f).</li>
+          <li>Clear focus rings support keyboard navigation.</li>
+        </ul>
+      </div>
+
+      <div class="outputs" aria-label="Outputs">
+        <div class="outputCard">
+          <h3 class="h3">Shell arrangement</h3>
+          <div id="shells" class="shells" aria-label="Electron shells"></div>
         </div>
 
-        <div class="divider" role="separator"></div>
-
-        <h3 class="h3">Challenge mode</h3>
-
-        <div class="row">
-          <label class="field">
-            <span class="field__label">Target ion charge</span>
-            <select id="targetIon" class="select" aria-label="Choose a target ion charge"></select>
-          </label>
-
-          <button id="setTarget" class="btn btn--primary" type="button">Set electrons to target</button>
-          <button id="randomChallenge" class="btn btn--soft" type="button">Random challenge</button>
+        <div class="outputCard">
+          <h3 class="h3">spdf notation</h3>
+          <p id="spdf" class="mono spdf" aria-live="polite"></p>
+          <p id="stability" class="note" aria-live="polite"></p>
+          <p class="small">
+            Tip: For transition metal ions, electrons are removed from <span class="mono">4s</span> before <span class="mono">3d</span>.
+          </p>
         </div>
+      </div>
 
-        <div class="row row--spread" style="margin-top:10px;">
-          <button id="check" class="btn btn--good" type="button">Check my ion</button>
-          <div class="pill">
-            Result: <span id="resultOut" class="pill__big">—</span>
-          </div>
+      <div class="divider" role="separator"></div>
+
+      <h3 class="h3">Challenge mode</h3>
+
+      <div class="row">
+        <label class="field">
+          <span class="field__label">Target ion charge</span>
+          <select id="targetIon" class="select" aria-label="Choose a target ion charge"></select>
+        </label>
+
+        <button id="setTarget" class="btn btn--primary" type="button">Set electrons to target</button>
+        <button id="randomChallenge" class="btn btn--soft" type="button">Random challenge</button>
+      </div>
+
+      <div class="row row--spread" style="margin-top:10px;">
+        <button id="check" class="btn btn--good" type="button">Check my ion</button>
+        <div class="pill">
+          Result: <span id="resultOut" class="pill__big">—</span>
         </div>
+      </div>
 
-        <p class="small">
-          Reminder: <b>protons stay the same</b>. Only the <b>number of electrons</b> changes when ions form.
-        </p>
+      <p class="small">
+        Reminder: <b>protons stay the same</b>. Only the <b>number of electrons</b> changes when ions form.
+      </p>
 
-        <div class="sr-only" aria-live="assertive" id="srStatus"></div>
-      </section>
-
-      <!-- RIGHT PANEL -->
-      <section class="card" aria-label="Visual explanation">
-        <h2 class="h2">Visual explanation</h2>
-
-        <p class="note">
-          Orbitals usually fill in this order (first 36 e⁻):
-          <span class="mono">1s 2s 2p 3s 3p 4s 3d 4p</span>.
-          <br>
-          <b>Common exceptions:</b> Cr and Cu rearrange slightly for extra stability
-          (Cr: <span class="mono">4s¹ 3d⁵</span>, Cu: <span class="mono">4s¹ 3d¹⁰</span>).
-        </p>
-
-        <div class="legend" aria-label="Subshell colour legend">
-          <div class="legend__item legend__s"><span class="legend__swatch"></span> s-block</div>
-          <div class="legend__item legend__p"><span class="legend__swatch"></span> p-block</div>
-          <div class="legend__item legend__d"><span class="legend__swatch"></span> d-block</div>
-          <div class="legend__item legend__f"><span class="legend__swatch"></span> f-block (not used for 1–36)</div>
-        </div>
-
-        <div id="orbitalBadge" class="orbital-badge" aria-live="polite"></div>
-
-        <div id="energyBands" class="energy-bands" aria-label="Energy levels">
-          <div class="energy-band energy-band--high">
-            <span class="energy-label">Higher energy</span>
-            <span class="energy-pill">absorbs light</span>
-          </div>
-          <div class="energy-band energy-band--low">
-            <span class="energy-label">Lower energy</span>
-            <span class="energy-pill">ground state</span>
-          </div>
-        </div>
-
-        <div id="jumpWrap" class="jump-wrap" aria-hidden="true">
-          <div id="jumpDot" class="jump-dot"></div>
-        </div>
-
-        <div id="orbitalView" class="orbs" aria-label="Orbital box diagrams"></div>
-      </section>
-
+      <div class="sr-only" aria-live="assertive" id="srStatus"></div>
     </section>
 
-    <footer class="footer">
-      <p class="small">
-        Keyboard-friendly: Tab to navigate, Enter/Space to activate buttons, arrow keys to adjust the slider.
+    <!-- RIGHT -->
+    <section class="card" aria-label="Visual explanation">
+      <h2 class="h2">Visual explanation</h2>
+
+      <p class="note">
+        Orbitals usually fill in this order (first 36 e⁻):
+        <span class="mono">1s 2s 2p 3s 3p 4s 3d 4p</span>.
+        <br>
+        <b>Common exceptions:</b> Cr and Cu rearrange slightly for extra stability
+        (Cr: <span class="mono">4s¹ 3d⁵</span>, Cu: <span class="mono">4s¹ 3d¹⁰</span>).
       </p>
-    </footer>
 
-  </main>
+      <div class="legend" aria-label="Subshell colour legend">
+        <div class="legend__item legend__s"><span class="legend__swatch"></span> s-block</div>
+        <div class="legend__item legend__p"><span class="legend__swatch"></span> p-block</div>
+        <div class="legend__item legend__d"><span class="legend__swatch"></span> d-block</div>
+        <div class="legend__item legend__f"><span class="legend__swatch"></span> f-block (not used for 1–36)</div>
+      </div>
 
-  <script src="script.js"></script>
+      <div id="orbitalBadge" class="orbital-badge" aria-live="polite"></div>
+
+      <div id="energyBands" class="energy-bands" aria-label="Energy levels">
+        <div class="energy-band energy-band--high">
+          <span class="energy-label">Higher energy</span>
+          <span class="energy-pill">absorbs light</span>
+        </div>
+        <div class="energy-band energy-band--low">
+          <span class="energy-label">Lower energy</span>
+          <span class="energy-pill">ground state</span>
+        </div>
+      </div>
+
+      <div id="jumpWrap" class="jump-wrap" aria-hidden="true">
+        <div id="jumpDot" class="jump-dot"></div>
+      </div>
+
+      <div id="orbitalView" class="orbs" aria-label="Orbital box diagrams"></div>
+    </section>
+
+  </section>
+
+  <footer class="footer">
+    <p class="small">Keyboard-friendly: Tab to navigate, Enter/Space to activate buttons, arrow keys to adjust the slider.</p>
+  </footer>
+
+</main>
+
+<script src="script.js"></script>
 </body>
 </html>
